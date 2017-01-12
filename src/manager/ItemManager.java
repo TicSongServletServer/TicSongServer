@@ -18,6 +18,10 @@ public class ItemManager {
 		return instance;
 	}
 	
+	public int insertItem(String userId) {
+		 return itemDAO.insertItem(userId);
+	 }
+	
 	 public int insertItem(ItemDTO item) {
 		 return itemDAO.insertItem(item);
 	 }
@@ -25,7 +29,7 @@ public class ItemManager {
 	 public int updateItem(ItemDTO item) {
 		 return itemDAO.updateItem(item);
 	 }
-	
+
 	 public ItemDTO getItem(String userId) {
 		 return itemDAO.getItem(userId);
 	 }

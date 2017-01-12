@@ -14,6 +14,7 @@ import DTO.ScoreView;
 public class MyScoreDAO {
 	
 	private final String USER_CHECK_SQL = "select * from myscore where userid=?;";
+	private final String INIT_MYSCORE_SQL = "insert into myscore (userid) values(?);";
 	private final String INSERT_MYSCORE_SQL = "insert into myscore (userid,exp,userlevel) values(?,?,?);";
 	private final String UPDATE_MYSCORE_SQL = "update myscore set exp=?, userlevel=? where userid=?;";
 	private final String RETRIEVE_MYSCORE_SQL = "select * from myscore where userid=?;";
@@ -29,6 +30,51 @@ public class MyScoreDAO {
 	}
 	private MyScoreDAO(){}
 	
+	
+	public int insertMyScore(String userId) {
+		PreparedStatement pstmt = null;
+		Connection conn = null;
+		int success = 0;
+		
+		try {
+			conn = DBConnection.getInstance().getConn();
+			conn.setAutoCommit(false);
+			
+			pstmt = conn.prepareStatement(INIT_MYSCORE_SQL);
+			pstmt.setString(1, userId);
+			success = pstmt.executeUpdate();
+			conn.commit();
+		} catch (SQLException e ) {
+	        e.printStackTrace();
+	        if (conn != null) {
+	            try {
+	                System.err.print("Transaction is being Rolled back");
+	                conn.rollback();
+	            } catch(SQLException se) {
+	                se.printStackTrace();
+	            }
+	        }
+	    } catch (Exception e) {
+	    	e.printStackTrace();
+	    	if (conn != null) {
+	            try {
+	                System.err.print("Transaction is being Rolled back");
+	                conn.rollback();
+	            } catch(SQLException se) {
+	                se.printStackTrace();
+	            }
+	        }
+	    } finally {
+	    	if (pstmt != null) try { pstmt.close(); } catch(SQLException ex) {}
+            if (conn != null) {
+            	try { 
+            		conn.setAutoCommit(true);
+                	conn.close(); 
+            	} catch(SQLException ex) {}
+            } 
+	    }
+		return success;
+	}
 	
 	public int insertMyScore(MyScoreDTO myScore) {
 		PreparedStatement pstmt = null;

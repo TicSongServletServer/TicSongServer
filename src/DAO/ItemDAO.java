@@ -5,15 +5,17 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import DTO.Item5;
 import DTO.ItemDTO;
-import DTO.MyScoreDTO;
 import module.DBConnection;
 
 public class ItemDAO {
 	
 	private final String USER_CHECK_SQL = "select * from item where userid=?;";
+	private final String INIT_ITEM_SQL = "insert into item (userid) values(?);";
 	private final String INSERT_ITEM_INIT = "insert into item (userid,item1Cnt,item2Cnt,item3Cnt,item4Cnt) values(?,?,?,?,?);";
 	private final String UPDATE_ITEM_SQL = "update item set item1Cnt=?, item2Cnt=?, item3Cnt=?, item4Cnt=? where userid=?;";
+	private final String UPDATE_ITEM_5_SQL = "update item set item1Cnt=?, item3Cnt=?, item4Cnt=?, item5Cnt=? where userid=?;";
 	private final String RETRIEVE_ITEM_SQL = "select * from item where userid=?;";
 	
 	private static ItemDAO itemDAO;
@@ -25,6 +27,55 @@ public class ItemDAO {
 	}
 	private ItemDAO(){}
 	
+	/**
+	 * Init 
+	 * @param userId
+	 * @return
+	 */
+	public int insertItem(String userId) {
+        PreparedStatement pstmt = null;
+        Connection conn = null;
+        int success = 0;
+
+        try {
+            conn = DBConnection.getInstance().getConn();
+            conn.setAutoCommit(false);
+
+            pstmt = conn.prepareStatement(INIT_ITEM_SQL);
+            pstmt.setString(1, userId);
+            success = pstmt.executeUpdate();
+            conn.commit();
+        } catch (SQLException e ) {
+            e.printStackTrace();
+            if (conn != null) {
+                try {
+                    System.err.print("Transaction is being Rolled back");
+                    conn.rollback();
+                } catch(SQLException se) {
+                    se.printStackTrace();
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            if (conn != null) {
+                try {
+                    System.err.print("Transaction is being Rolled back");
+                    conn.rollback();
+                } catch(SQLException se) {
+                    se.printStackTrace();
+                }
+            }
+        } finally {
+            if (pstmt != null) try { pstmt.close(); } catch(SQLException ex) {}
+            if (conn != null) {
+                try {
+                    conn.setAutoCommit(true);
+                    conn.close();
+                } catch(SQLException ex) {}
+            }
+        }
+        return success;
+    }
 	
     public int insertItem(ItemDTO item) {
         PreparedStatement pstmt = null;
@@ -75,6 +126,8 @@ public class ItemDAO {
         return success;
     }
     
+    
+ 
     public int updateItem(ItemDTO item) {
         PreparedStatement pstmt = null;
         Connection conn = null;
@@ -91,12 +144,26 @@ public class ItemDAO {
             
             if(rs.next()){
                 
-                pstmt = conn.prepareStatement(UPDATE_ITEM_SQL);
-                pstmt.setInt(1, item.getItem1Cnt());
-                pstmt.setInt(2, item.getItem2Cnt());
-                pstmt.setInt(3, item.getItem3Cnt());
-                pstmt.setInt(4, item.getItem4Cnt());
-                pstmt.setString(5, item.getUserId());
+            	// if iOS
+            	if (item instanceof Item5) {
+            		Item5 item5 = (Item5) item;
+            		pstmt = conn.prepareStatement(UPDATE_ITEM_5_SQL);
+                    pstmt.setInt(1, item5.getItem1Cnt());
+                    pstmt.setInt(2, item5.getItem3Cnt());
+                    pstmt.setInt(3, item5.getItem4Cnt());
+                    pstmt.setInt(4, item5.getItem5Cnt());
+                    pstmt.setString(5, item.getUserId());
+            	}
+            	// if Android
+            	else {
+            		pstmt = conn.prepareStatement(UPDATE_ITEM_SQL);
+                    pstmt.setInt(1, item.getItem1Cnt());
+                    pstmt.setInt(2, item.getItem2Cnt());
+                    pstmt.setInt(3, item.getItem3Cnt());
+                    pstmt.setInt(4, item.getItem4Cnt());
+                    pstmt.setString(5, item.getUserId());
+            	}
+                
                 pstmt.executeUpdate();
 
                 success = 1;

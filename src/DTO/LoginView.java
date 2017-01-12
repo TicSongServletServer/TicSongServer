@@ -13,14 +13,14 @@ public class LoginView implements Serializable{
 	private int item2Cnt;
 	private int item3Cnt;
 	private int item4Cnt;
+	private int item5Cnt;
 	
 	public LoginView() {
 		// TODO Auto-generated constructor stub
 	}
 
-	public LoginView(String userId, String name, int platform, int exp,
-			int userLevel, int item1Cnt, int item2Cnt, int item3Cnt,
-			int item4Cnt) {
+	public LoginView(String userId, String name, int platform, int exp, int userLevel, int item1Cnt, int item2Cnt,
+			int item3Cnt, int item4Cnt, int item5Cnt) {
 		super();
 		this.userId = userId;
 		this.name = name;
@@ -31,6 +31,7 @@ public class LoginView implements Serializable{
 		this.item2Cnt = item2Cnt;
 		this.item3Cnt = item3Cnt;
 		this.item4Cnt = item4Cnt;
+		this.item5Cnt = item5Cnt;
 	}
 
 	public String getUserId() {
@@ -104,13 +105,20 @@ public class LoginView implements Serializable{
 	public void setItem4Cnt(int item4Cnt) {
 		this.item4Cnt = item4Cnt;
 	}
+	
+	public int getItem5Cnt() {
+		return item5Cnt;
+	}
+
+	public void setItem5Cnt(int item5Cnt) {
+		this.item5Cnt = item5Cnt;
+	}
 
 	@Override
 	public String toString() {
-		return "LoginView [userId=" + userId + ", name=" + name + ", platform="
-				+ platform + ", exp=" + exp + ", userLevel=" + userLevel
-				+ ", item1Cnt=" + item1Cnt + ", item2Cnt=" + item2Cnt
-				+ ", item3Cnt=" + item3Cnt + ", item4Cnt=" + item4Cnt + "]";
+		return "LoginView [userId=" + userId + ", name=" + name + ", platform=" + platform + ", exp=" + exp
+				+ ", userLevel=" + userLevel + ", item1Cnt=" + item1Cnt + ", item2Cnt=" + item2Cnt + ", item3Cnt="
+				+ item3Cnt + ", item4Cnt=" + item4Cnt + ", item5Cnt=" + item5Cnt + "]";
 	}
 	
 }

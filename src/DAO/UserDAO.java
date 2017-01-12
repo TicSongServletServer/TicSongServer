@@ -39,99 +39,8 @@ public class UserDAO {
 	}
 	
 	
-	public int insertUser(String userId, String name) {
-		PreparedStatement pstmt = null;
-		Connection conn = null;
-		int success = 0;
-		
-		try {
-			conn = DBConnection.getInstance().getConn();
-			conn.setAutoCommit(false);
-			
-			pstmt = conn.prepareStatement(INSERT_USER_ID_NAME);
-			pstmt.setString(1, userId);pstmt.setString(2, name);
-			success = pstmt.executeUpdate();
-			conn.commit();
-		} catch (SQLException e ) {
-	        e.printStackTrace();
-	        if (conn != null) {
-	            try {
-	                System.err.print("Transaction is being Rolled back");
-	                conn.rollback();
-	            } catch(SQLException se) {
-	                se.printStackTrace();
-	            }
-	        }
-	    } catch (Exception e) {
-	    	e.printStackTrace();
-	    	if (conn != null) {
-	            try {
-	                System.err.print("Transaction is being Rolled back");
-	                conn.rollback();
-	            } catch(SQLException se) {
-	                se.printStackTrace();
-	            }
-	        }
-	    } finally {
-	    	if (pstmt != null) try { pstmt.close(); } catch(SQLException ex) {}
-            if (conn != null) {
-            	try { 
-            		conn.setAutoCommit(true);
-                	conn.close(); 
-            	} catch(SQLException ex) {}
-            } 
-	    }
-		return success;
-	}
 	
-	public int insertUser(String userId, String name, int platform) {
-		PreparedStatement pstmt = null;
-		Connection conn = null;
-		int success = 0;
-		
-		try {
-			conn = DBConnection.getInstance().getConn();
-			conn.setAutoCommit(false);
-			
-			pstmt = conn.prepareStatement(INSERT_USER_ID_NAME_PLATFORM);
-			pstmt.setString(1, userId);pstmt.setString(2, name);
-			pstmt.setInt(3, platform);
-			success = pstmt.executeUpdate();
-			conn.commit();
-		} catch (SQLException e ) {
-	        e.printStackTrace();
-	        if (conn != null) {
-	            try {
-	                System.err.print("Transaction is being Rolled back");
-	                conn.rollback();
-	            } catch(SQLException se) {
-	                se.printStackTrace();
-	            }
-	        }
-	    } catch (Exception e) {
-	    	e.printStackTrace();
-	    	if (conn != null) {
-	            try {
-	                System.err.print("Transaction is being Rolled back");
-	                conn.rollback();
-	            } catch(SQLException se) {
-	                se.printStackTrace();
-	            }
-	        }
-	    } finally {
-	    	if (pstmt != null) try { pstmt.close(); } catch(SQLException ex) {}
-            if (conn != null) {
-            	try { 
-            		conn.setAutoCommit(true);
-                	conn.close(); 
-            	} catch(SQLException ex) {}
-            } 
-	    }
-		return success;
-	}
-	
-
-	/* 실제 사용 login() */
+	/* login() After */
 	public LoginView login(String userId, String name, int platform) {
 		
 		PreparedStatement pstmt = null;
@@ -149,6 +58,81 @@ public class UserDAO {
 			if (rs.next()) {
 				
 				if( updateName(userId, name)==1 ) {
+					
+					System.out.println("Old User Login. OK.");
+					
+					pstmt = conn.prepareStatement(LOGIN_VIEW);
+					pstmt.setString(1,userId);
+					pstmt.setString(2,name);
+					pstmt.setInt(3, platform);
+					rs = pstmt.executeQuery();
+					if(rs.next()) {
+						loginView = new LoginView(rs.getString("userid"),rs.getString("name"),rs.getInt("platform")
+								,rs.getInt("exp"),rs.getInt("userLevel")
+								,rs.getInt("item1Cnt"),rs.getInt("item2Cnt"),rs.getInt("item3Cnt"),rs.getInt("item4Cnt"),rs.getInt("item5Cnt"));
+					}
+					
+				}
+				
+				
+			} else {
+				
+				if( insertUser(userId, name, platform)==1 ) {
+					System.out.println("New User Login; welcome.\nNew User Register. OK.");
+					
+					if( MyScoreManager.getInstance().insertMyScore(userId)==1 ) 
+						if( ItemManager.getInstance().insertItem(userId)==1 ) {
+							
+							pstmt = conn.prepareStatement(LOGIN_VIEW);
+							pstmt.setString(1,userId);
+							pstmt.setString(2,name);
+							pstmt.setInt(3, platform);
+							rs = pstmt.executeQuery();
+							if(rs.next()) {
+								loginView = new LoginView(rs.getString("userid"),rs.getString("name"),rs.getInt("platform")
+										,rs.getInt("exp"),rs.getInt("userLevel")
+										,rs.getInt("item1Cnt"),rs.getInt("item2Cnt"),rs.getInt("item3Cnt"),rs.getInt("item4Cnt"),rs.getInt("item5Cnt"));
+											
+						}
+					}
+				}
+			}
+		} catch ( Exception ex ) {
+			ex.printStackTrace();
+		} finally {
+			try {
+				pstmt.close();
+				rs.close();
+				conn.close();
+			} catch(Exception ex) {
+				ex.printStackTrace();
+			}
+		}
+		return loginView;
+	}
+	
+	
+
+	/* login() Before */
+	/*
+	public LoginView login(String userId, String name, int platform) {
+		
+		PreparedStatement pstmt = null;
+		LoginView loginView = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		
+		try {
+			conn = DBConnection.getInstance().getConn();
+			
+			pstmt = conn.prepareStatement(LOGIN_BY_ID);
+			pstmt.setString(1,userId);
+			rs = pstmt.executeQuery();
+			
+			if (rs.next()) {
+				
+				if( updateName(userId, name)==1 ) {
+					
 					System.out.println("Old User Login. OK.");
 					
 					pstmt = conn.prepareStatement(LOGIN_VIEW);
@@ -201,6 +185,8 @@ public class UserDAO {
 		}
 		return loginView;
 	}
+	
+	*/
 	
 	public int updateName(String userId, String name) {
 		
@@ -442,6 +428,96 @@ public class UserDAO {
 	}
 	
 	
+	public int insertUser(String userId, String name) {
+		PreparedStatement pstmt = null;
+		Connection conn = null;
+		int success = 0;
+		
+		try {
+			conn = DBConnection.getInstance().getConn();
+			conn.setAutoCommit(false);
+			
+			pstmt = conn.prepareStatement(INSERT_USER_ID_NAME);
+			pstmt.setString(1, userId);pstmt.setString(2, name);
+			success = pstmt.executeUpdate();
+			conn.commit();
+		} catch (SQLException e ) {
+	        e.printStackTrace();
+	        if (conn != null) {
+	            try {
+	                System.err.print("Transaction is being Rolled back");
+	                conn.rollback();
+	            } catch(SQLException se) {
+	                se.printStackTrace();
+	            }
+	        }
+	    } catch (Exception e) {
+	    	e.printStackTrace();
+	    	if (conn != null) {
+	            try {
+	                System.err.print("Transaction is being Rolled back");
+	                conn.rollback();
+	            } catch(SQLException se) {
+	                se.printStackTrace();
+	            }
+	        }
+	    } finally {
+	    	if (pstmt != null) try { pstmt.close(); } catch(SQLException ex) {}
+            if (conn != null) {
+            	try { 
+            		conn.setAutoCommit(true);
+                	conn.close(); 
+            	} catch(SQLException ex) {}
+            } 
+	    }
+		return success;
+	}
+	
+	public int insertUser(String userId, String name, int platform) {
+		PreparedStatement pstmt = null;
+		Connection conn = null;
+		int success = 0;
+		
+		try {
+			conn = DBConnection.getInstance().getConn();
+			conn.setAutoCommit(false);
+			
+			pstmt = conn.prepareStatement(INSERT_USER_ID_NAME_PLATFORM);
+			pstmt.setString(1, userId);pstmt.setString(2, name);
+			pstmt.setInt(3, platform);
+			success = pstmt.executeUpdate();
+			conn.commit();
+		} catch (SQLException e ) {
+	        e.printStackTrace();
+	        if (conn != null) {
+	            try {
+	                System.err.print("Transaction is being Rolled back");
+	                conn.rollback();
+	            } catch(SQLException se) {
+	                se.printStackTrace();
+	            }
+	        }
+	    } catch (Exception e) {
+	    	e.printStackTrace();
+	    	if (conn != null) {
+	            try {
+	                System.err.print("Transaction is being Rolled back");
+	                conn.rollback();
+	            } catch(SQLException se) {
+	                se.printStackTrace();
+	            }
+	        }
+	    } finally {
+	    	if (pstmt != null) try { pstmt.close(); } catch(SQLException ex) {}
+            if (conn != null) {
+            	try { 
+            		conn.setAutoCommit(true);
+                	conn.close(); 
+            	} catch(SQLException ex) {}
+            } 
+	    }
+		return success;
+	}
 	
 	
 }

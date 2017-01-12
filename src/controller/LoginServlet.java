@@ -59,7 +59,7 @@ public class LoginServlet extends HttpServlet {
 		LoginView loginView = userM.login(userId,name,platform);
 
 		JSONObject loginJson = new JSONObject();
-		/*---------------¸ð¹ÙÀÏÀ» »ç¿ëÇÏ´Â °æ¿ì --------------------*/
+		/*---------------ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ï´ï¿½ ï¿½ï¿½ï¿½ --------------------*/
 		//if ( userAgent.toLowerCase().equals("okhttp")  ) {
 			try {
 				loginJson.put("resultCode", "1");
@@ -73,6 +73,7 @@ public class LoginServlet extends HttpServlet {
 				loginJson.put("item2Cnt", loginView.getItem2Cnt());
 				loginJson.put("item3Cnt", loginView.getItem3Cnt());
 				loginJson.put("item4Cnt", loginView.getItem4Cnt());
+				loginJson.put("item5Cnt", loginView.getItem5Cnt());
 				
 			} catch(NullPointerException npe) {
 				npe.printStackTrace();

@@ -19,6 +19,10 @@ public class MyScoreManager {
 		return instance;
 	}
 	
+	public int insertMyScore(String userId) {
+		return myScoreDAO.insertMyScore(userId);
+	}
+	
 	public int insertMyScore(MyScoreDTO myScore) {
 		return myScoreDAO.insertMyScore(myScore);
 	}
