@@ -7,9 +7,10 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import module.DBConnection;
 import DTO.MyScoreDTO;
+import DTO.ScoreRank;
 import DTO.ScoreView;
+import module.DBConnection;
 
 public class MyScoreDAO {
 	
@@ -20,6 +21,11 @@ public class MyScoreDAO {
 	private final String RETRIEVE_MYSCORE_SQL = "select * from myscore where userid=?;";
 	private final String RETRIEVE_FRIEND_SCORE_SQL = "select * from score_view where userid=?;";
 	private final String RETRIEVE_TOP20_SQL = "select * from score_view limit 20;";
+	private final String RETRIEVE_TOP30_SQL = "select @rank := @rank+1 as rank, "
+			+ "z.* from ( select * from score_view group by userid)z, (select @rank:=0)y limit 30;";
+	private final String RETRIEVE_MYRANK_SQL = "select a.* from ( select @rank := @rank+1 as rank, "
+			+ "z.* from ( select * from score_view group by userid)z, (select @rank:=0)y ) a "
+			+ "where userid=?;";
 	
 	private static MyScoreDAO myScoreDAO;
 	static {
@@ -283,6 +289,74 @@ public class MyScoreDAO {
             } 
 	    }
 		return friends;
+	}
+	
+	
+	public List<ScoreRank> getRankers() {
+		
+		PreparedStatement pstmt = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		List<ScoreRank> scoreList = null;
+		
+		try {
+			scoreList = new ArrayList<ScoreRank>();
+			conn = DBConnection.getInstance().getConn();
+			
+            pstmt = conn.prepareStatement(RETRIEVE_TOP30_SQL);
+            rs = pstmt.executeQuery();
+                
+            while(rs.next()){
+            	scoreList.add(new ScoreRank(rs.getInt("rank"), rs.getString("userId"), rs.getString("name"),
+            			rs.getInt("exp"),rs.getInt("userLevel")));
+			}
+		} catch (SQLException e ) {
+	        e.printStackTrace();
+	    } catch (Exception e) {
+	    	e.printStackTrace();
+	    } finally {
+	    	if (pstmt != null) try { pstmt.close(); } catch(SQLException ex) {}
+            if (conn != null) {
+            	try { 
+                	conn.close(); 
+            	} catch(SQLException ex) {}
+            } 
+	    }
+		return scoreList;
+	}
+	
+	public int getMyRank(String userId) {
+		
+		PreparedStatement pstmt = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		int myRank = -1;
+		
+		try {
+			
+			conn = DBConnection.getInstance().getConn();
+			
+            pstmt = conn.prepareStatement(RETRIEVE_MYRANK_SQL);
+            pstmt.setString(1, userId);
+            rs = pstmt.executeQuery();
+            
+            if(rs.next()) {
+            	myRank = rs.getInt("rank");
+            }
+            
+		} catch (SQLException e ) {
+	        e.printStackTrace();
+	    } catch (Exception e) {
+	    	e.printStackTrace();
+	    } finally {
+	    	if (pstmt != null) try { pstmt.close(); } catch(SQLException ex) {}
+            if (conn != null) {
+            	try { 
+                	conn.close(); 
+            	} catch(SQLException ex) {}
+            } 
+	    }
+		return myRank;
 	}
 
 }

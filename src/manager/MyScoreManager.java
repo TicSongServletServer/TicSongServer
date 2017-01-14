@@ -4,6 +4,7 @@ import java.util.List;
 
 import DAO.MyScoreDAO;
 import DTO.MyScoreDTO;
+import DTO.ScoreRank;
 import DTO.ScoreView;
 
 public class MyScoreManager {
@@ -41,6 +42,14 @@ public class MyScoreManager {
 	
 	public List<ScoreView> getFriendScores(List<String> friendList) {
 		return myScoreDAO.getFriendScores(friendList);
+	}
+	
+	public int getMyRank(String userId) {
+		return myScoreDAO.getMyRank(userId);
+	}
+	
+	public List<ScoreRank> getRankers() {
+		return myScoreDAO.getRankers();
 	}
 
 }

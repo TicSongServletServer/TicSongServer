@@ -10,15 +10,15 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import manager.MyScoreManager;
-
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 import DTO.MyScoreDTO;
+import DTO.ScoreRank;
 import DTO.ScoreView;
+import manager.MyScoreManager;
 
 /**
  * Servlet implementation class ScoreServlet
@@ -86,6 +86,21 @@ public class MyScoreServlet extends HttpServlet {
 				
 				jsonOut(response, fListOut);
 				break;
+				
+			case "rank" :
+				getRankers(userId, response);
+				break;
+		}
+	}
+	
+	private void getRankers(String userId, HttpServletResponse response) throws ServletException, IOException {
+		
+		int myRank = myScoreMgr.getMyRank(userId);
+		if (myRank < 0) {
+			System.out.println("[ Ranker List Result ] \n FAILED !!!");
+			jsonOut(response, myRank);
+		} else {
+			jsonOut(response, myRank, myScoreMgr.getRankers());
 		}
 	}
 	
@@ -147,7 +162,54 @@ public class MyScoreServlet extends HttpServlet {
 		return ;
 	}
 	
-	private void jsonOut(HttpServletResponse response, List<ScoreView> scoreList) throws ServletException, IOException {
+	private void jsonOut(HttpServletResponse response, int myRank, List<ScoreRank> rankList) throws ServletException, IOException {
+		
+		JSONObject rankJson = new JSONObject();
+		try {
+			
+			if(rankList != null) {
+				
+				rankJson.put("resultCode", "1");
+				rankJson.put("timestamp", System.currentTimeMillis());
+				rankJson.put("myRank", myRank);
+				JSONArray rankJSONArray = new JSONArray();
+				JSONObject rJson = null;
+				for( ScoreRank rank : rankList) {
+					
+					rJson = new JSONObject();
+					rJson.put("rank", rank.getRank());
+					rJson.put("userId", rank.getUserId());
+					rJson.put("name", rank.getName());
+					rJson.put("exp", rank.getExp());
+					rJson.put("userLevel", rank.getUserLevel());
+					
+					rankJSONArray.add(rJson);
+				}
+				rankJson.put("rankerList", rankJSONArray);
+				
+			} else {
+				// get 실패 
+				rankJson.put("resultCode", "0");
+				rankJson.put("errorCode", "1");
+				rankJson.put("errorDescription", "No Paper list.");
+			}
+		} catch(NullPointerException npe) {
+			npe.printStackTrace();
+			rankJson.put("resultCode", "-1");
+			rankJson.put("errorCode", "");
+			rankJson.put("errorDescription", "Exception");
+			
+		} finally {
+			System.out.println("[Ranker Json Out]\n" + rankJson.toString() + "\n");
+			PrintWriter pw = response.getWriter();
+			pw.print(rankJson.toString());
+			pw.close();
+		}
+		return ;
+	}
+	
+	
+private void jsonOut(HttpServletResponse response, List<ScoreView> scoreList) throws ServletException, IOException {
 		
 		JSONArray scoreArr = new JSONArray();
 		JSONObject scoreJson = null;

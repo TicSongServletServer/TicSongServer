@@ -74,7 +74,6 @@ public class UserDAO {
 					
 				}
 				
-				
 			} else {
 				
 				if( insertUser(userId, name, platform)==1 ) {
